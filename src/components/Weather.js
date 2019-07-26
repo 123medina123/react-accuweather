@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import fetchWeather from '../api/Api';
+import fetchWeather, { getAutoCompleteFunc , getMyLocation } from '../api/Api';
 import Content from './Content';
 import { connect } from 'react-redux';
 
@@ -10,15 +10,21 @@ class Weather extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      term: 'Paris',
-      errMsg: ''
+      term: '',
+      errMsg: '',
+      select:[],
+      cursor:0
     };
   }
 
   async componentDidMount(){
     const position = await this.getPosition();
-    const myLocation = await fetchWeather(position.coords.latitude + ',' + position.coords.longitude);
-    this.props.pushCity(myLocation);
+    const myLocation = await getMyLocation(position.coords.latitude + ',' + position.coords.longitude);
+    const cityWeather = await fetchWeather(myLocation.data[0].ParentCity.Key);
+    this.props.pushCity({
+      ...cityWeather.data,
+      LocalizedName: myLocation.data[0].ParentCity.LocalizedName
+    });
 
   }
 
@@ -28,38 +34,83 @@ class Weather extends Component {
     });
   }
 
-  addCity = async(e) => {
-    e.preventDefault();
-    const {term} = this.state;
-    try{
-      const response = await fetchWeather(term);
-      return this.props.pushCity(response);
-    }
-    catch(err){
-      this.setState({
-        errMsg : err.toString()
-      })
-    }
+onInputChange = async(term) => {
+  if(term === ''){
+    this.setState({
+      term: '',
+      select: []
+    })
+  }
+  else{
+    this.setState({term: term});
+    const results = await getAutoCompleteFunc(term);
+    this.setState({
+      select: results.data
+    })
+  }
+}
+
+handleKeyDown =(e) => {
+  const { cursor, select } = this.state
+  // arrow up/down button should select next/previous list element
+  if (e.keyCode === 38 && cursor > 0) {
+    this.setState( prevState => ({
+      cursor: prevState.cursor - 1
+    }))
+  }
+  if (e.keyCode === 40 && cursor < select.length - 1) {
+    this.setState( prevState => ({
+      cursor: prevState.cursor + 1
+    }))
+  }
+  //users press enter
+  if(e.keyCode === 13){
+    e.preventDefault;
+    this.handleClick(select[cursor]);
   }
 
+}
+
+handleClick = async(city) => {
+    const weatherResponse = await fetchWeather(city.Key);
+    this.props.pushCity({
+      ...weatherResponse.data,
+      LocalizedName: city.LocalizedName
+    });
+    this.setState({
+      term:'',
+      select:[],
+      cursos:0
+    });
+}
+
+autoCompleteItemRender = (data,i) =>{
+  const {term,cursor} = this.state;
+  return(
+    <div  onClick={() => this.handleClick(data)} className={cursor === i ? 'autocomplete-item active' : 'autocomplete-item'} key={data.Key} >
+      <strong>{term.charAt(0).toUpperCase()}</strong>
+      {data.LocalizedName.toString().replace(term.charAt(0).toUpperCase(),'')}
+    </div>
+  )
+}
+
   render() {
-    const {term} =this.state;
+    const {term,select} =this.state;
     return (
       <div>
         <div className="header">
           <div className="CountrySelector">
-            <form onSubmit={this.addCity} className="navbar-form">
-              <div className="form-group">
-                <input
-                    value={term}
-                   onChange={event => this.setState({term: event.target.value})}
-                    className="form-control input-search" />
-                    <div className="error">{this.state.errMsg}</div>
-                </div>
-                  <button type="submit" className="btn btn-default">
-                  Add City
-                  </button>
-              </form>
+            <div className="form-group">
+              <input
+                  value={term}
+                  onKeyDown={ this.handleKeyDown }
+                  onChange={event => this.onInputChange(event.target.value)}
+                  className="form-control input-search" />
+                  <div className="error">{this.state.errMsg}</div>
+                  <div className="autocomplete-items">
+                   {select.map((data,i) => this.autoCompleteItemRender(data,i))}
+                   </div>
+              </div>
           </div>
         </div>
         <div className="contents">
