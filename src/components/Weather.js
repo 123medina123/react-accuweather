@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 
 import fetchWeather from '../api/Api';
 import Content from './Content';
-import { connect } from 'react-redux';  
-import { bindActionCreators } from 'redux';
-import FontAwesome from 'react-fontawesome';
+import { connect } from 'react-redux';
 
 export const PUSH_CITY = 'PUSH_CITY';
 
@@ -32,7 +30,7 @@ class Weather extends Component {
 
   addCity = async(e) => {
     e.preventDefault();
-    const {term,favorites} = this.state;
+    const {term} = this.state;
     try{
       const response = await fetchWeather(term);
       return this.props.pushCity(response);
@@ -86,4 +84,4 @@ function mapStateToProps({ cities }){
 	return { cities };
 }
 
-export default connect(mapStateToProps,mapDispatchToProps) (Weather);
+export default connect(mapStateToProps,mapDispatchToProps)(Weather);

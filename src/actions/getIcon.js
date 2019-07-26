@@ -168,6 +168,6 @@ export const iconsMap = [{
 export default (
   iconId: string,
 ): string => {
- const icon = iconsMap.find(icon => icon.id == iconId);
+ const icon = iconsMap.find(icon => icon.id === iconId);
  return icon.icon;
 }

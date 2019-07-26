@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
-import { getWeather } from '../api/Api';
 import getIcon from '../actions/getIcon.js';
 
 class Content extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   celciusConverter(degre) {
     const c = (parseInt(degre) - 32) * 5 / 9;
@@ -19,10 +15,10 @@ class Content extends Component {
             <div key={'forecast-' + index}>
             <div className="date">{this.dayOfWeekAsString(date.getDay())}</div>
             <div className='day'>
-              <img src={getIcon(Day.Icon).toString()}/>
+              <img src={getIcon(Day.Icon).toString()} alt="weather-icon"/>
             </div>
             <div className={'night ' + Day.IconPhrase }>
-              <img src={getIcon(Night.Icon).toString()}/></div>
+              <img src={getIcon(Night.Icon).toString()} alt="weather-icon"/></div>
             <div className="minmax">
               <span className="max">
                 {this.celciusConverter(Temperature.Maximum.Value.toString())}
@@ -37,7 +33,7 @@ class Content extends Component {
   	}
 
    dayOfWeekAsString(dayIndex) {
-      return ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][dayIndex];
+      return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][dayIndex];
     }
 
     getIconUri(index){
@@ -49,11 +45,9 @@ class Content extends Component {
 
   render() {
     const {city} = this.props;
-    console.log(city);
       return (
         <div className="Content">
         <div className="name">{city.LocalizedName.toString()}<div className="text">{city.Headline.Text}</div></div>
-
           <div className="weather">
             {city.DailyForecasts.map((data,index) => this.renderWeather(data,index))}
 
