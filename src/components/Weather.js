@@ -6,6 +6,7 @@ import Content from './Content';
 import { connect } from 'react-redux';
 
 export const PUSH_CITY = 'PUSH_CITY';
+export const DELETE_CITY = 'DELETE_CITY';
 
 class Weather extends Component {
   constructor(props) {
@@ -126,7 +127,7 @@ autoCompleteItemRender = (data,i) =>{
         <div className="contents">
           {
             this.props.cities.map((city,index) => {
-              return <Content key={index.toString()} city ={city} />;
+              return <Content key={index.toString()} city ={city}  onDelete={() => this.props.deleteCity(index)}/>;
             })
           }
         </div>
@@ -138,6 +139,7 @@ autoCompleteItemRender = (data,i) =>{
 function mapDispatchToProps(dispatch){
   return({
       pushCity: cityInfo => dispatch({ type: PUSH_CITY, payload: cityInfo }),
+      deleteCity: index =>  dispatch({ type: DELETE_CITY, index: index })
   })
 }
 

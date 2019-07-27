@@ -44,9 +44,10 @@ class Content extends Component {
     }
 
   render() {
-    const {city} = this.props;
+    const {city,onDelete} = this.props;
       return (
         <div className="Content">
+        <div className="close"  onClick={onDelete}></div>
         <div className="name">{city.LocalizedName.toString()}<div className="text">{city.Headline.Text}</div></div>
           <div className="weather">
             {city.DailyForecasts.map((data,index) => this.renderWeather(data,index))}
