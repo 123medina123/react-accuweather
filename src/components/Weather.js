@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
-import fetchWeather, { getAutoCompleteFunc , getMyLocation } from '../api/Api';
+import fetchWeather, { getAutoCompleteFunc , getMyLocation,getPosition } from '../api/Api';
 import Content from './Content';
 import { connect } from 'react-redux';
 
@@ -18,19 +19,12 @@ class Weather extends Component {
   }
 
   async componentDidMount(){
-    const position = await this.getPosition();
+    const position = await getPosition();
     const myLocation = await getMyLocation(position.coords.latitude + ',' + position.coords.longitude);
     const cityWeather = await fetchWeather(myLocation.data[0].ParentCity.Key);
     this.props.pushCity({
       ...cityWeather.data,
       LocalizedName: myLocation.data[0].ParentCity.LocalizedName
-    });
-
-  }
-
-  getPosition =  (options) => {
-    return new Promise(function (resolve, reject) {
-      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
   }
 
@@ -52,23 +46,35 @@ onInputChange = async(term) => {
 
 handleKeyDown =(e) => {
   const { cursor, select } = this.state
-  // arrow up/down button should select next/previous list element
-  if (e.keyCode === 38 && cursor > 0) {
-    this.setState( prevState => ({
-      cursor: prevState.cursor - 1
-    }))
+  if (e.keyCode === 38) {
+    if(cursor == 0){
+      this.setState( prevState => ({
+        cursor: select.length - 1
+      }))
+    }
+    else{
+      this.setState( prevState => ({
+        cursor: prevState.cursor - 1
+      }))
+    }
   }
-  if (e.keyCode === 40 && cursor < select.length - 1) {
-    this.setState( prevState => ({
-      cursor: prevState.cursor + 1
-    }))
+
+  if (e.keyCode === 40) {
+    if(cursor == select.length - 1){
+      this.setState( prevState => ({
+        cursor: 0
+      }))
+    }
+    else{
+      this.setState( prevState => ({
+        cursor: prevState.cursor + 1
+      }))
+    }
   }
-  //users press enter
-  if(e.keyCode === 13){
+  if(e.keyCode === 13 && select.length !== 0){
     e.preventDefault;
     this.handleClick(select[cursor]);
   }
-
 }
 
 handleClick = async(city) => {
@@ -102,13 +108,16 @@ autoCompleteItemRender = (data,i) =>{
           <div className="CountrySelector">
             <div className="form-group">
               <input
+                  placeholder="Search city..."
                   value={term}
                   onKeyDown={ this.handleKeyDown }
                   onChange={event => this.onInputChange(event.target.value)}
                   className="form-control input-search" />
                   <div className="error">{this.state.errMsg}</div>
                   <div className="autocomplete-items">
-                   {select.map((data,i) => this.autoCompleteItemRender(data,i))}
+                   {
+                    (select.length === 0 && term !== '') ?   <div> No match</div> : select.map((data,i) => this.autoCompleteItemRender(data,i))
+                    }
                    </div>
               </div>
           </div>
@@ -134,5 +143,12 @@ function mapDispatchToProps(dispatch){
 function mapStateToProps({ cities }){
 	return { cities };
 }
+
+Weather.propTypes = {
+  term: PropTypes.string,
+  errMsg: PropTypes.string,
+  select:PropTypes.array,
+  cursor:PropTypes.number
+};
 
 export default connect(mapStateToProps,mapDispatchToProps)(Weather);
