@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_KEY = 'pG6GAe25xofAOq5qqPe9YOkT3tuQL900';
+const API_KEY = 'qWAkpSYSQjcUJ6ClLcoAau1J2cU3IkGI';
 const API_HOST = 'https://dataservice.accuweather.com/';
 const API_VERSION = 'v1';
 

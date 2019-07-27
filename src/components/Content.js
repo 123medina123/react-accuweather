@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import getIcon from '../actions/getIcon.js';
+import {DragSource, DropTarget} from 'react-dnd/lib';
 
 class Content extends Component {
   celciusConverter(degre) {
@@ -44,8 +45,8 @@ class Content extends Component {
     }
 
   render() {
-    const {city,onDelete} = this.props;
-      return (
+    const {city,onDelete,connectDragSource,connectDropTarget} = this.props;
+      return connectDropTarget(connectDragSource((
         <div className="Content">
         <div className="close"  onClick={onDelete}></div>
         <div className="name">{city.LocalizedName.toString()}<div className="text">{city.Headline.Text}</div></div>
@@ -53,8 +54,35 @@ class Content extends Component {
             {city.DailyForecasts.map((data,index) => this.renderWeather(data,index))}
           </div>
         </div>
-      );
+      )));
   }
 }
 
-export default Content;
+export default DragSource(
+  'Content',
+  {
+    beginDrag: props => ({
+      index: props.index
+    }),
+    endDrag: (props, monitor) => {
+      props.onReorder(props.index, monitor.getDropResult().index);
+    }
+  },
+  (connect, monitor) => ({
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  })
+)(
+  DropTarget(
+    'Content',
+    {
+        drop: props => ({
+        index: props.index
+      })
+    },
+    (connect, monitor) => ({
+      connectDropTarget: connect.dropTarget(),
+      isHovered: monitor.isOver()
+    })
+  )(Content)
+);

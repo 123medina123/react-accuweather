@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import {DragDropContext} from 'react-dnd/lib';
+import HTML5Backend from 'react-dnd-html5-backend';
+import { connect } from 'react-redux';
 
 import fetchWeather, { getAutoCompleteFunc , getMyLocation,getPosition } from '../api/Api';
 import Content from './Content';
-import { connect } from 'react-redux';
+
 
 export const PUSH_CITY = 'PUSH_CITY';
 export const DELETE_CITY = 'DELETE_CITY';
+export const REORDER_LIST = 'REORDER_LIST';
 
 class Weather extends Component {
   constructor(props) {
@@ -19,7 +23,7 @@ class Weather extends Component {
     };
   }
 
-  async componentDidMount(){
+async componentDidMount(){
     const position = await getPosition();
     const myLocation = await getMyLocation(position.coords.latitude + ',' + position.coords.longitude);
     const cityWeather = await fetchWeather(myLocation.data[0].ParentCity.Key);
@@ -49,7 +53,7 @@ onInputChange = async(term) => {
 handleKeyDown =(e) => {
   const { cursor, select } = this.state
   if (e.keyCode === 38) {
-    if(cursor == 0){
+    if(cursor === 0){
       this.setState( prevState => ({
         cursor: select.length - 1
       }))
@@ -62,7 +66,7 @@ handleKeyDown =(e) => {
   }
 
   if (e.keyCode === 40) {
-    if(cursor == select.length - 1){
+    if(cursor === select.length - 1){
       this.setState( prevState => ({
         cursor: 0
       }))
@@ -102,6 +106,17 @@ autoCompleteItemRender = (data,i) =>{
   )
 }
 
+cityContentRender = (city,index) => {
+  return(
+     <Content
+     key={index.toString()}
+     city ={city}
+     index={index}
+     onDelete={() => this.props.deleteCity(index)}
+     onReorder={this.props.reorderCity}/>
+  )
+}
+
   render() {
     const {term,select} =this.state;
     return (
@@ -125,11 +140,8 @@ autoCompleteItemRender = (data,i) =>{
           </div>
         </div>
         <div className="contents">
-          {
-            this.props.cities.map((city,index) => {
-              return <Content key={index.toString()} city ={city}  onDelete={() => this.props.deleteCity(index)}/>;
-            })
-          }
+        <div className="text-reorder">Drag to reorder :</div>
+          {this.props.cities.map((city,index) =>this.cityContentRender(city,index))}
         </div>
       </div>
     );
@@ -139,7 +151,8 @@ autoCompleteItemRender = (data,i) =>{
 function mapDispatchToProps(dispatch){
   return({
       pushCity: cityInfo => dispatch({ type: PUSH_CITY, payload: cityInfo }),
-      deleteCity: index =>  dispatch({ type: DELETE_CITY, index: index })
+      deleteCity: index =>  dispatch({ type: DELETE_CITY, index: index }),
+      reorderCity: (from,to) => dispatch({ type: REORDER_LIST, from: from , to: to })
   })
 }
 
@@ -154,4 +167,7 @@ Weather.propTypes = {
   cursor:PropTypes.number
 };
 
-export default connect(mapStateToProps,mapDispatchToProps)(Weather);
+Weather = DragDropContext(HTML5Backend)(Weather)
+Weather = connect(mapStateToProps,mapDispatchToProps)(Weather)
+
+export default Weather;
