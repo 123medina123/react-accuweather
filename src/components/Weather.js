@@ -133,14 +133,14 @@ cityContentRender = (city,index) => {
                   <div className="error">{this.state.errMsg}</div>
                   <div className="autocomplete-items">
                    {
-                    (select.length === 0 && term !== '') ?   <div> No match</div> : select.map((data,i) => this.autoCompleteItemRender(data,i))
+                    (select.length === 0 && term !== '') ? <div>No match results</div> : select.map((data,i) => this.autoCompleteItemRender(data,i))
                     }
                    </div>
               </div>
           </div>
         </div>
         <div className="contents">
-        <div className="text-reorder">Drag to reorder :</div>
+          <div className="text-reorder">Drag to reorder :</div>
           {this.props.cities.map((city,index) =>this.cityContentRender(city,index))}
         </div>
       </div>
