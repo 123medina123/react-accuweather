@@ -32,7 +32,8 @@ onInputChange = async(term) => {
   if(term === ''){
     this.setState({
       term: '',
-      select: []
+      select: [],
+      cursor: 0
     })
   }
   else{
@@ -86,7 +87,7 @@ handleClick = async(city) => {
     this.setState({
       term:'',
       select:[],
-      cursos:0
+      cursor:0
     });
 }
 
